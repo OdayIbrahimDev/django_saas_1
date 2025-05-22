@@ -28,23 +28,55 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-# Application definition
 
-INSTALLED_APPS = [
+# Application definition
+#These app's data are stored on the public schema
+
+SHARED_APPS = [
+    'django_tenants',  # mandatory
+    'tenant',  # you must list the app where your tenant model resides in
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'blog',
-
+    
     'ckeditor',
     'ckeditor_uploader',
+    
+    
+ 
+
+    # we place blog here since we want 
+    # public schema to have the same structure like tenant apps
+    'blog',
 ]
 
+#These app's data are stored on their specific schemas
+TENANT_APPS = [
+    # The following Django contrib apps must be in TENANT_APPS
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.admin',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+        # tenant-specific apps
+    'blog',
+]
+
+INSTALLED_APPS = list(SHARED_APPS) + [
+    app for app in TENANT_APPS if app not in SHARED_APPS
+]
+
+
 MIDDLEWARE = [
+    # add django tenants
+    #'django_tenants.Middleware.main.TenantMainMidlleware',
+    'django_tenants.middleware.main.TenantMainMiddleware',
+    'core.middleware.TenantMiddleware',
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -75,16 +107,41 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 
+
+
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# Setup Postgres database in settings.py
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # Tenant Engine
+        'ENGINE': 'django_tenants.postgresql_backend',
+        # set database name
+        'NAME': 'saasy',
+        # set your user details
+        'USER': 'postgres',
+        'PASSWORD': '1234',
+        'HOST': '127.0.0.1',
+        'POST': '5432'
     }
 }
 
+# DATABASE ROUTER
+DATABASE_ROUTERS = (
+    'django_tenants.routers.TenantSyncRouter',
+)
+
+TENANT_MODEL = "tenant.Tenant"
+
+TENANT_DOMAIN_MODEL = "tenant.Domain"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

@@ -4,11 +4,13 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Bloggies</title>
+    <title>
+     {{title}}
+    </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Boxicon awesome icon -->
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}"">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
   </head>
   <body>
 
@@ -16,7 +18,7 @@
     <header>
       <nav class = "navbar">
         <div class = "container">
-          <a href = "{% url 'blog:home' %}" class = "navbar-brand">Academy.Omen</a>
+          <a href = "{% url 'blog:home' %}" class = "navbar-brand">{{title}}</a>
           <div class = "navbar-nav">
             <a href = "{% url 'blog:home' %}">home</a>
             <a href = "{% url 'blog:articles' %}">articles</a>

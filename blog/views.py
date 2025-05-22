@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, HttpResponseRedirect
 from .models import Profile, Tag, Article
+from tenant.models import Tenant
 
 # Django Q objects use to create complex queries
 # https://docs.djangoproject.com/en/3.2/topics/db/queries/#complex-lookups-with-q-objects
@@ -10,11 +11,24 @@ def home(request):
 
     # feature articles on the home page
     featured = Article.articlemanager.filter(featured=True)[0:3]
-
+    # get the blog name from the tenant model
+    # and set it to the title of the page
+    dominTitle = request.get_host().split('.')[0]
+    try:
+        titleName = Tenant.objects.get(blog_name=dominTitle)
+        titleName = titleName.blog_name
+    except Tenant.DoesNotExist:
+        titleName = 'Blogx'
+    #blogName = Tenant.objects.values_list('blog_name',flat=True)
+    # for title in blogName:
+    #     if title != dominTitle:
+    #         titleName = 'Blogx'  
+    #     else:
+    #         titleName = title  
     context = {
-        'articles': featured
+        'articles': featured,
+        'title'   : titleName
     }
-
     return render(request, 'index.html', context)
 
 
