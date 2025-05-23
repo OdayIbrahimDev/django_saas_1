@@ -52,6 +52,7 @@ SHARED_APPS = [
     # we place blog here since we want 
     # public schema to have the same structure like tenant apps
     'blog',
+    'admindashboard', # Added the new admin dashboard app
 ]
 
 #These app's data are stored on their specific schemas

@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Bloggies</title>
+    <title>{{ product.name|default:"Product Detail" }}</title> {# Updated Title #}
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Boxicon awesome icon -->
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
@@ -48,10 +48,11 @@
     
     <nav class = "navbar">
       <div class = "container">
-        <a href = "{% url 'blog:home' %}" class = "navbar-brand">Academy.Omen</a>
+        <a href = "{% url 'blog:home' %}" class = "navbar-brand">{{ title|default:"Academy.Omen" }}</a> {# Dynamic title #}
         <div class = "navbar-nav">
           <a href = "{% url 'blog:home' %}">home</a>
-          <a href = "{% url 'blog:articles' %}">articles</a>
+          <a href = "{% url 'blog:articles' %}">products</a> {# Changed from articles to products #}
+          <a href = "{% url 'blog:view_cart' %}">Cart</a> {# Added Cart link #}
           <a href = "">about</a>
         </div>
       </div>
@@ -59,33 +60,34 @@
     
     <!-- end of header -->
 
-    <!-- start of post -->
-    <div class="post-container">
-        <img class="featured_img" src="{{ article.image.url }}">
-        <!-- start article details -->
-        <div class="article-info">
-          <div class="article-info-content display-center">
-            <div class="display-center">
-              <img class="author-pic" src="{{ article.author.profile_pic.url }}" alt="">
-              <h6>by {{ article.author }} on {{ article.publish|date:"D M Y" }}</h6>
-            </div>
-            
-            <div class="article-meta">
-              {% for tag in article.tags.all %}
-              <span class="tag"><a href="#">{{ tag.name }}</a></span>
-              {% endfor %}
-              <a class="back-button" href="{% url 'blog:articles' %}">All Articles</a>
-            </div>
-          </div>
-        </div>
-        <!-- end of article details -->
+    <!-- start of product detail -->
+    <div class="post-container"> {# Consider renaming class to product-container or similar #}
+        {% if product.image %}
+        <img class="featured_img" src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+        <img class="featured_img" src="{% static 'placeholder.png' %}" alt="Placeholder for {{ product.name }}">
+        {% endif %}
+        
         <hr>   
-        <h1>headline</h1>
-        <h4>sub_headline</h4>
+        <h1>{{ product.name }}</h1>
+        <h4>Price: ${{ product.price|floatformat:2 }}</h4>
         <br>
-        <p>{{ article.body|safe }}</p>
+        <div> <!-- Product Description -->
+            {{ product.description|safe }}
+        </div>
+        <br>
+        
+        {# Removed author, publish date, tags, sub_headline #}
+        
+        <div class="mt-3 mb-3"> {# Add to cart button #}
+            <a href="{% url 'blog:add_to_cart' product.id %}" class="btn btn-success btn-lg">Add to Cart</a>
+        </div>
+
+        <div class="article-meta"> {# Kept for back button, though class name is from old context #}
+            <a class="back-button" href="{% url 'blog:articles' %}">All Products</a> {# Link back to product list #}
+        </div>
     </div>
-    <!-- end of post -->
+    <!-- end of product detail -->
 
     <!-- footer -->
     <footer>
@@ -95,7 +97,7 @@
         <a href = "#"><i class='bx bxl-instagram'></i></a>
         <a href = "#"><i class='bx bxl-github'></i></a>
       </div>
-      <span>Academy.Omen Bloggies</span>
+      <span>Academy.Omen Products</span> {# Changed from Bloggies to Products #}
     </footer>
     <!-- end of footer -->
     
