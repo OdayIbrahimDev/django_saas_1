@@ -2,70 +2,79 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.db.models import DecimalField, IntegerField, PositiveIntegerField # Add IntegerField and PositiveIntegerField
 
 from ckeditor_uploader.fields import RichTextUploadingField
 
 
+class Product(models.Model):
+    name = models.CharField(max_length=200)
+    description = RichTextUploadingField(null=True, blank=True) # Renamed from body
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(null=True, blank=True, upload_to="product_images/", default="placeholder.png") # Changed upload_to
+    stock = models.IntegerField(default=0)
 
-class Profile(models.Model):
+    # Removed author, headline, sub_headline, featured, tags, options, slug, publish, status, objects, articlemanager
 
-    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=200, blank=True, null=True)
-    last_name = models.CharField(max_length=200, blank=True, null=True)
-    email = models.CharField(max_length=200)
-    profile_pic = models.ImageField(null=True, blank=True, upload_to="profile")
-    bio = models.TextField(null=True, blank=True)
-    twitter = models.URLField(max_length=200,null=True, blank=True)
+    def get_absolute_url(self):
+        # Assuming you have a URL pattern named 'product_detail' that takes a pk or slug
+        # If using a slug, ensure you have a slug field in the model
+        return reverse('blog:product_detail', args=[self.pk]) # Updated for product detail view by pk
 
-    def __str__(self):
-        name = str(self.first_name)
-        if self.last_name:
-            name += ' ' + str(self.last_name)
-        return name
-
-
-class ArticleManager(models.Manager):
-        def get_queryset(self):
-            return super().get_queryset() .filter(status='published')
-
-
-class Tag(models.Model):
-    name = models.CharField(max_length=100)
+    class Meta:
+        ordering = ('name',) # Order by name
 
     def __str__(self):
         return self.name
 
 
-class Article(models.Model):
-
-    author = models.ForeignKey(
-        Profile, on_delete=models.CASCADE, related_name='author')
-
-    headline = models.CharField(max_length=200)
-    sub_headline = models.CharField(max_length=200, null=True, blank=True)
-    image = models.ImageField(null=True, blank=True, upload_to="article", default="placeholder.png")
-    body = RichTextUploadingField(null=True, blank=True)
-    featured = models.BooleanField(default=False)
-    tags = models.ManyToManyField(Tag, blank=True)
-
-
-    options = (
-        ('draft', 'Draft'),
-        ('published', 'Published'),
-    )
-    slug = models.SlugField(max_length=250, unique_for_date='publish')
-    publish = models.DateTimeField(default=timezone.now)
-    
-    status = models.CharField(max_length=10, choices=options, default='draft')
-
-    objects = models.Manager()  # default manager
-    articlemanager = ArticleManager()  # custom manager
-
-    def get_absolute_url(self):
-        return reverse('blog:article', args=[self.slug])
-
-    class Meta:
-        ordering = ('-publish',)
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.headline
+        return f"{self.quantity} of {self.product.name} for {self.user.username}"
+
+    @property
+    def subtotal(self):
+        return self.quantity * self.product.price
+
+
+class Order(models.Model):
+    STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Processing', 'Processing'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled'),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    customer_name = models.CharField(max_length=255)
+    customer_phone = models.CharField(max_length=20)
+    customer_address = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+
+    def __str__(self):
+        return f"Order {self.id} by {self.customer_name}"
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2) # Price at the time of order
+    created_at = models.DateTimeField(auto_now_add=True) # Keep track of when item was added
+
+    def __str__(self):
+        return f"{self.quantity} of {self.product.name} for Order {self.order.id}"
+
+    @property
+    def subtotal(self):
+        return self.quantity * self.price

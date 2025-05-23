@@ -21,7 +21,8 @@
           <a href = "{% url 'blog:home' %}" class = "navbar-brand">{{title}}</a>
           <div class = "navbar-nav">
             <a href = "{% url 'blog:home' %}">home</a>
-            <a href = "{% url 'blog:articles' %}">articles</a>
+            <a href = "{% url 'blog:articles' %}">products</a> {# Changed from articles to products #}
+            <a href = "{% url 'blog:view_cart' %}">Cart</a> {# Added Cart link #}
             <a href = "">about</a>
           </div>
         </div>
@@ -29,9 +30,9 @@
       <div class = "banner">
         <div class = "container">
           <h1 class = "banner-title">
-            <span>Omen.</span> Bloggies
+            <span>Omen.</span> Products
           </h1>
-          <p>everything you need to know about building a Sass with Django</p>
+          <p>Your one-stop shop for amazing products!</p>
         </div>
       </div>
     </header>
@@ -41,27 +42,33 @@
     <section class = "featured" id = "featured">
       <div class = "container">
         <div class = "title">
-          <h2>Featured articles</h2>
+          <h2>Featured Products</h2> {# Changed from articles to products #}
         </div>
 
         <div class = "featured-content">
-          {% for article in articles %}
+          {% for product in products %} {# Changed from 'articles' to 'products' #}
           <!-- item -->
           <div class = "featured-item">
             <div class = "featured-img">
-              <a href="{{ article.get_absolute_url }}">
-                <img src = "{{ article.image.url }}" alt = "">
-                <span><i class='bx bx-calendar-star'></i>{{ article.publish|date:"M Y" }}</span>
-                <span>{{ article.sub_headline }}</span>
+              <a href="{% url 'blog:product_detail' product.pk %}"> {# Updated URL for product detail #}
+                {% if product.image %}
+                <img src = "{{ product.image.url }}" alt = "{{ product.name }}">
+                {% else %}
+                <img src = "{% static 'placeholder.png' %}" alt = "Placeholder image">
+                {% endif %}
+                <span>Price: ${{ product.price|floatformat:2 }}</span> {# Display price #}
               </a>
             </div>
             <div class = "featured-title">
-              <a href = "{{ article.get_absolute_url }}">{{ article.headline }}</a>
+              <a href="{% url 'blog:product_detail' product.pk %}">{{ product.name }}</a> {# Display product name #}
+            </div>
+            <div class="mt-2"> {# Add to cart button #}
+                <a href="{% url 'blog:add_to_cart' product.id %}" class="btn btn-primary btn-sm">Add to Cart</a>
             </div>
           </div>
           <!-- end of item -->
           {% empty %}
-			      <h3>No Featured Article at the Moment...</h3>  
+			      <h3>No Featured Products at the Moment...</h3>  {# Changed from Article to Products #}
           {% endfor %}
         </div>
       </div>
@@ -96,7 +103,7 @@
         <a href = "#"><i class='bx bxl-instagram'></i></a>
         <a href = "#"><i class='bx bxl-github'></i></a>
       </div>
-      <span>Academy.Omen Bloggies</span>
+      <span>Academy.Omen Products</span> {# Changed from Bloggies to Products #}
     </footer>
     <!-- end of footer -->
     

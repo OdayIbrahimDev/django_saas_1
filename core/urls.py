@@ -5,6 +5,7 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('superadmin/', include('admindashboard.urls', namespace='admindashboard')), # Added admindashboard urls
     path('', include('blog.urls', namespace='blog')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
 ]
